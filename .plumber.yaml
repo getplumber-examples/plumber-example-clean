@@ -1,0 +1,179 @@
+# =============================================================================
+# Plumber policy — SHARED across the three example repositories
+# =============================================================================
+# This is the SAME file in plumber-example-clean, plumber-example-moderate and
+# plumber-example-critical. Only the repository quality differs between them, so
+# the three Plumber scores (A / C / E) come purely from the workflows, never
+# from a weakened policy.
+#
+# Every GitHub Actions control Plumber ships is ENABLED here and tuned to the
+# scope of these repos (a small TypeScript library published to npm + a demo
+# container image).
+#
+# Reproducing the documented score:
+#   plumber analyze
+# A few controls are API-backed (they call the GitHub API through `gh`) and a
+# couple are opt-in (gitleaks). Without `gh auth login` / gitleaks on PATH they
+# abstain instead of producing false positives — see each note below.
+# =============================================================================
+version: "2.0"
+
+github:
+  controls:
+
+    # ── Supply chain: actions & images ──────────────────────────────────────
+    actionsMustBePinnedByCommitSha:
+      enabled: true
+      trustedOwners:
+        - actions
+        - github
+    actionsMustNotBeArchived:        # API
+      enabled: true
+    actionsMustNotCarryKnownCVEs:    # API
+      enabled: true
+    actionRefsMustExistUpstream:     # API (impostor-commit)
+      enabled: true
+    actionPinCommentsMustMatchSha:   # API
+      enabled: true
+    actionPinsMustNotBeStale:        # API
+      enabled: true
+    actionRefsMustNotCollide:        # API
+      enabled: true
+    actionsMustNotDuplicateRunnerBuiltins:
+      enabled: true
+    containerImageMustNotUseForbiddenTags:
+      enabled: true
+      tags:
+        - latest
+        - dev
+        - development
+        - staging
+        - main
+        - master
+      containerImagesMustBePinnedByDigest: true
+    containerCredentialsMustComeFromSecrets:
+      enabled: true
+    dockerfilesMustPinBaseImageByDigest:
+      enabled: true
+    releaseWorkflowsMustNotRestoreUntrustedCache:
+      enabled: true
+    releaseWorkflowsMustSignArtefacts:
+      enabled: true
+    publishWorkflowsMustUseOidcTrustedPublishing:
+      enabled: true
+
+    # ── Expressions & injection ─────────────────────────────────────────────
+    workflowMustNotInjectUserInputInScripts:
+      enabled: true
+    workflowMustNotInjectVarsInScripts:
+      enabled: true
+    workflowMustNotWriteUntrustedContentToGitHubEnv:
+      enabled: true
+    workflowMustNotExportEntireGitHubContext:
+      enabled: true
+    workflowMustNotReEnableInsecureCommands:
+      enabled: true
+    workflowMustNotTrustSpoofableActorChecks:
+      enabled: true
+    workflowConditionsMustBeSound:
+      enabled: true
+    workflowContainsCallsMustBeSound:
+      enabled: true
+    workflowMustPinPackageInstalls:
+      enabled: true
+
+    # ── Secrets, credentials & permissions ──────────────────────────────────
+    pipelineMustNotLeakSecretsInConfig:   # opt-in, requires gitleaks on PATH
+      enabled: true
+    reusableWorkflowsMustNotInheritSecrets:
+      enabled: true
+    workflowMustNotUnredactSecretsViaFromJSON:
+      enabled: true
+    workflowMustNotExportEntireSecretsContext:
+      enabled: true
+    workflowMustNotIndexSecretsDynamically:
+      enabled: true
+    workflowsMustDeclarePermissions:
+      enabled: true
+    workflowMustNotGrantPermissionsWriteAll:
+      enabled: true
+    deployJobsMustUseEnvironmentGate:
+      enabled: true
+    githubAppTokensMustBeRevokedOnExit:
+      enabled: true
+    checkoutMustNotPersistCredentials:
+      enabled: true
+
+    # ── Triggers & composition ──────────────────────────────────────────────
+    pipelineMustNotExecuteUnverifiedScripts:
+      enabled: true
+      trustedUrls: []
+    workflowMustNotUseDangerousTriggers:
+      enabled: true
+    pullRequestTargetMustNotCheckoutHead:
+      enabled: true
+    pipelineMustNotUseDockerInDocker:
+      enabled: true
+      detectInsecureDaemon: true
+    pipelineMustNotEnableDebugTrace:
+      enabled: true
+      forbiddenVariables:
+        - ACTIONS_STEP_DEBUG
+        - ACTIONS_RUNNER_DEBUG
+    workflowMustIncludeRequiredActions:
+      enabled: true
+      # Every repo in this org must run SAST via CodeQL.
+      required: github/codeql-action
+
+    # ── Workflow hygiene ────────────────────────────────────────────────────
+    workflowsMustHaveExplicitName:
+      enabled: true
+    workflowsMustDeclareConcurrency:
+      enabled: true
+    workflowMustNotUseKnownMisfeatures:
+      enabled: true
+    workflowMustNotContainObfuscation:
+      enabled: true
+    securityJobsMustNotBeWeakened:
+      enabled: true
+      securityJobPatterns:
+        - "*codeql*"
+        - "*dependency-review*"
+        - "*trufflehog*"
+        - "*gitleaks*"
+        - "*osv-scanner*"
+        - "*-sast"
+        - "*-sast-*"
+        - "*-scan"
+        - "*scan*"
+        - "*-security"
+        - "*-security-*"
+        - "*-audit"
+        - "*-audit-*"
+      allowFailureMustBeFalse:
+        enabled: true
+      rulesMustNotBeRedefined:
+        enabled: true
+      whenMustNotBeManual:
+        enabled: true
+
+    # ── Repository governance ───────────────────────────────────────────────
+    branchMustBeProtected:           # API — needs a token with repo / admin read
+      enabled: true
+      defaultMustBeProtected: true
+      namePatterns:
+        - main
+        - master
+        - "release/*"
+      allowForcePush: false
+      codeOwnerApprovalRequired: true
+    repositoriesMustConfigureDependencyUpdates:
+      enabled: true
+    repositoriesMustRunSAST:
+      enabled: true
+    repositoriesMustPublishSecurityPolicy:
+      enabled: true
+    dependabotMustNotAllowInsecureExternalCodeExecution:
+      enabled: true
+    dependabotEcosystemsMustHaveCooldown:
+      enabled: true

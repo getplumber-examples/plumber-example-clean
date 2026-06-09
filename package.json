@@ -1,0 +1,30 @@
+{
+  "name": "@acme/widget-utils",
+  "version": "1.0.0",
+  "description": "Small, well-tested utility helpers for building widgets.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "widget-utils": "dist/cli.js"
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "eslint": "9.17.0",
+    "typescript": "5.7.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/acme/plumber-example-clean.git"
+  }
+}
