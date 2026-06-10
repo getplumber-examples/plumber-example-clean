@@ -1,5 +1,5 @@
 # Code owners — required reviewers for branch protection (codeOwnerApprovalRequired).
 # Configure "Require review from Code Owners" on the protected branch so Plumber's
 # branchMustBeProtected control is satisfied when run with an API token.
-*           @acme/platform-security
-/.github/   @acme/platform-security
+*           @Totara-thib
+/.github/   @Totara-thib
