@@ -27,6 +27,13 @@ github:
       trustedOwners:
         - actions
         - github
+    githubActionMustComeFromAuthorizedSources:
+      enabled: true
+      trustGithubOfficialActions: true   # trust actions/* and github/*
+      minimumStars: 0                    # API; 0 = off (kept deterministic for the examples)
+      trustedGithubActions:
+        - getplumber/*                   # the scanner's own action (plumber.yml)
+        - sigstore/*                     # release artefact signing (cosign-installer)
     actionsMustNotBeArchived:        # API
       enabled: true
     actionsMustNotCarryKnownCVEs:    # API
