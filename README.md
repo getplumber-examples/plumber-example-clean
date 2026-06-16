@@ -19,6 +19,9 @@ This is one of three sibling repositories that share the *same* `.plumber.yaml` 
 - **Least-privilege `permissions:`** declared on every workflow (`contents: read` by default).
 - **`concurrency:`** on every workflow.
 - **`persist-credentials: false`** on every `actions/checkout`.
+- **Actions from authorized sources only** — every `uses:` is GitHub-official (`actions/*`,
+  `github/*`) or on the org allowlist (`getplumber/*`, `sigstore/*`), so
+  `githubActionMustComeFromAuthorizedSources` (ISSUE-713) passes.
 - **Lockfile installs only** (`npm ci`) — no unpinned `npm install <pkg>`.
 - **No injection surface** — no `${{ github.event.* }}` in `run:`, no `toJson(github)`, no
   `toJson(secrets)`, no writes to `$GITHUB_ENV` from user input.
