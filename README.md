@@ -1,5 +1,7 @@
 # plumber-example-clean — target Plumber score: **A** 🟢
 
+[![Plumber Score](https://img.shields.io/badge/Plumber%20Score-B-green)](https://github.com/getplumber-examples/plumber-example-clean/actions/workflows/plumber.yml?query=branch%3Amain)
+
 A deliberately *clean* GitHub Actions setup for the [Plumber](https://github.com/getplumber/plumber)
 CI/CD compliance scanner. Every control in [`.plumber.yaml`](./.plumber.yaml) is enabled,
 and this repository is built so that **none of them fire** — the expected result is an
