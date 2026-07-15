@@ -7,9 +7,11 @@ on:
     branches: [main]
 
 # Least-privilege: read the repo, write SARIF to code scanning.
+# id-token is for publishing the live Plumber Score badge (default branch only).
 permissions:
   contents: read
   security-events: write
+  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,11 +24,11 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-      - uses: getplumber/plumber@a697e9c316b058d279861719c73b87093fb5a60f # v0.3.86
+      - uses: getplumber/plumber@3e7d6933189432f9a2ebcc2f6ba813bef7916179 # v0.4.3
         with:
-          # v0.3.51 doesn't credit the (correctly configured) code-owner rule,
-          # so it reports ISSUE-505 and caps this otherwise-clean repo at 94.1%
-          # compliance. Set the gate below that so the check passes; findings
-          # still upload to code scanning.
-          threshold: 80
-          soft-fail: true
+          # This repo is built to stay at the top grade. Gate on the Plumber
+          # Score letter and fail the build on any regression below an A;
+          # findings still upload to code scanning.
+          min-score: A
+          # Publish the live A badge to score.getplumber.io (default branch only).
+          score-push: true

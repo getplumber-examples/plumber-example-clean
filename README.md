@@ -1,11 +1,11 @@
 # plumber-example-clean — target Plumber score: **A** 🟢
 
-[![Plumber Score](https://img.shields.io/badge/Plumber%20Score-A-3fb950?style=for-the-badge&labelColor=2b2d42)](https://github.com/getplumber-examples/plumber-example-clean/actions/workflows/plumber.yml?query=branch%3Amain)
+[![Plumber Score](https://score.getplumber.io/github.com/getplumber-examples/plumber-example-clean.svg)](https://score.getplumber.io/github.com/getplumber-examples/plumber-example-clean)
 
 A deliberately *clean* GitHub Actions setup for the [Plumber](https://github.com/getplumber/plumber)
-CI/CD compliance scanner. Every control in [`.plumber.yaml`](./.plumber.yaml) is enabled,
-and this repository is built so that **none of them fire** — the expected result is an
-**A** (final points 100).
+CI/CD compliance scanner. Every GitHub control that Plumber **v0.4.3** ships (23 of them) is
+enabled in [`.plumber.yaml`](./.plumber.yaml), and this repository is built so that **none of
+them fire** — the expected result is an **A** (100 final points).
 
 This is one of three sibling repositories that share the *same* `.plumber.yaml` policy:
 
@@ -17,7 +17,9 @@ This is one of three sibling repositories that share the *same* `.plumber.yaml` 
 
 ## What makes it clean
 
-- **Actions pinned by 40-char commit SHA** with `# vX.Y.Z` comments (real, current SHAs).
+- **Actions pinned by 40-char commit SHA** with `# vX.Y.Z` comments — real, current SHAs that
+  exist upstream (clears impostor-commit ISSUE-707) and are pinned, not ambiguous `v3`-style
+  tag/branch refs (clears ref-confusion ISSUE-402).
 - **Least-privilege `permissions:`** declared on every workflow (`contents: read` by default).
 - **`concurrency:`** on every workflow.
 - **`persist-credentials: false`** on every `actions/checkout`.
@@ -26,10 +28,13 @@ This is one of three sibling repositories that share the *same* `.plumber.yaml` 
   `toJson(secrets)`, no writes to `$GITHUB_ENV` from user input.
 - **Safe triggers** — `push` / `pull_request` only; no `pull_request_target`, `workflow_run`, etc.
 - **Release hardening** — OIDC trusted publishing (`npm publish --provenance`, no static token),
-  `environment: production` gate, cosign signature, no cross-branch cache.
+  `environment: production` gate, cosign signature, and **no shared cache in the publish job**
+  (setup-node's npm cache is cross-branch and can't be ref-scoped, so restoring it in a release
+  build is cache-poisoning, ISSUE-705 — caching stays in `ci.yml`).
 - **Dockerfile base pinned by digest.**
-- **Repo governance** — CodeQL SAST workflow, `dependabot.yml` with cooldowns and no insecure
-  external code execution, and a `SECURITY.md`.
+- **Required SAST** — a CodeQL workflow satisfies `workflowMustIncludeRequiredActions`. (The repo
+  also ships a `dependabot.yml` with cooldowns and a `SECURITY.md` as good hygiene; the controls
+  for those are still on Plumber's dev-side bench in v0.4.3, so they don't affect the score yet.)
 
 ## Run it
 

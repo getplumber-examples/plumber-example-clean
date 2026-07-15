@@ -29,7 +29,10 @@ jobs:
         with:
           node-version: "22.x"
           registry-url: https://registry.npmjs.org
-          cache: npm
+          # No `cache:` here on purpose. setup-node's npm cache is keyed only by
+          # the lockfile hash and is shared across branches, so a PR run can
+          # poison the cache a release build would restore (ISSUE-705). The
+          # publish job installs fresh; caching stays in ci.yml only.
       - run: npm ci
       - run: npm run build
       - run: npm pack

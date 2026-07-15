@@ -6,15 +6,15 @@
 # the three Plumber scores (A / C / E) come purely from the workflows, never
 # from a weakened policy.
 #
-# Every GitHub Actions control Plumber ships is ENABLED here and tuned to the
-# scope of these repos (a small TypeScript library published to npm + a demo
-# container image).
+# Every GitHub Actions control that Plumber v0.4.3 ships is ENABLED here and
+# tuned to the scope of these repos (a small TypeScript library published to
+# npm + a demo container image). This file validates cleanly against v0.4.3:
 #
-# Reproducing the documented score:
-#   plumber analyze
-# A few controls are API-backed (they call the GitHub API through `gh`) and a
-# couple are opt-in (gitleaks). Without `gh auth login` / gitleaks on PATH they
-# abstain instead of producing false positives — see each note below.
+#   plumber config validate
+#
+# A few controls are API-backed (they call the GitHub API through `gh`) and one
+# is opt-in (gitleaks). Without `gh auth login` / gitleaks on PATH they abstain
+# instead of producing false positives.
 # =============================================================================
 version: "2.0"
 
@@ -27,20 +27,22 @@ github:
       trustedOwners:
         - actions
         - github
-    actionsMustNotBeArchived:        # API
+    actionsMustNotBeArchived:            # API
       enabled: true
-    actionsMustNotCarryKnownCVEs:    # API
+    actionsMustNotCarryKnownCVEs:        # API
       enabled: true
-    actionRefsMustExistUpstream:     # API (impostor-commit)
+    actionRefsMustExistUpstream:         # API (impostor-commit, ISSUE-707)
       enabled: true
-    actionPinCommentsMustMatchSha:   # API
+    externalRefsMustNotCollide:          # API (ref-confusion, ISSUE-402)
       enabled: true
-    actionPinsMustNotBeStale:        # API
+    githubActionMustComeFromAuthorizedSources:
       enabled: true
-    actionRefsMustNotCollide:        # API
-      enabled: true
-    actionsMustNotDuplicateRunnerBuiltins:
-      enabled: true
+      trustGithubOfficialActions: true
+      trustSameOrgActions: true
+      minimumStars: 0
+      trustedGithubActions:
+        - getplumber/plumber             # Plumber's own GitHub Action
+        - sigstore/cosign-installer      # release signing (clean repo)
     containerImageMustNotUseForbiddenTags:
       enabled: true
       tags:
@@ -51,35 +53,49 @@ github:
         - main
         - master
       containerImagesMustBePinnedByDigest: true
-    containerCredentialsMustComeFromSecrets:
+    releaseWorkflowsMustNotRestoreUntrustedCache:   # cache-poisoning, ISSUE-705
       enabled: true
-    dockerfilesMustPinBaseImageByDigest:
-      enabled: true
-    releaseWorkflowsMustNotRestoreUntrustedCache:
-      enabled: true
-    releaseWorkflowsMustSignArtefacts:
-      enabled: true
-    publishWorkflowsMustUseOidcTrustedPublishing:
-      enabled: true
+      publishActions:
+        - pypa/gh-action-pypi-publish
+        - JS-DevTools/npm-publish
+        - gradle/publish-plugin
+        - softprops/action-gh-release
+        - ncipollo/release-action
+        - goreleaser/goreleaser-action
+        - crazy-max/ghaction-docker-buildx
+        - changesets/action
+      cacheActions:
+        - {action: actions/cache, mode: always}
+        - {action: actions/cache/restore, mode: always}
+        - {action: Swatinem/rust-cache, mode: always}
+        - {action: actions/setup-go, mode: default, disableInput: cache, disableValue: false}
+        - {action: gradle/actions/setup-gradle, mode: default, disableInput: cache-disabled, disableValue: true}
+        - {action: actions/setup-node, mode: opt-in, enableInput: cache}
+        - {action: actions/setup-python, mode: opt-in, enableInput: cache}
+        - {action: actions/setup-java, mode: opt-in, enableInput: cache}
+        - {action: pnpm/action-setup, mode: opt-in, enableInput: cache}
+        - {action: docker/build-push-action, mode: opt-in, enableInput: cache-from, enableContains: type=gha}
+      publishScriptPatterns:
+        - '(?i)(npm|pnpm|yarn|bun)\s+publish'
+        - '(?i)cargo\s+publish'
+        - '(?i)twine\s+upload'
+        - '(?i)poetry\s+publish'
+        - '(?i)gh\s+release\s+create'
+        - '(?i)goreleaser\s+release'
+        - '(?i)semantic-release'
+        - '(?i)gradlew?\b[^\n]*\bpublish'
+        - '(?i)\bmvnw?\b[^\n]*\bdeploy\b'
+        - '(?i)dotnet\s+nuget\s+push'
+        - '(?i)gem\s+push'
+        - '(?i)docker\s+push'
+      publishScriptExcludePatterns:
+        - '(?i)--dry-run'
+        - '(?i)publishToMavenLocal'
 
     # ── Expressions & injection ─────────────────────────────────────────────
     workflowMustNotInjectUserInputInScripts:
       enabled: true
-    workflowMustNotInjectVarsInScripts:
-      enabled: true
-    workflowMustNotWriteUntrustedContentToGitHubEnv:
-      enabled: true
-    workflowMustNotExportEntireGitHubContext:
-      enabled: true
-    workflowMustNotReEnableInsecureCommands:
-      enabled: true
-    workflowMustNotTrustSpoofableActorChecks:
-      enabled: true
-    workflowConditionsMustBeSound:
-      enabled: true
-    workflowContainsCallsMustBeSound:
-      enabled: true
-    workflowMustPinPackageInstalls:
+    workflowMustNotWriteUntrustedContentToGitHubEnv:   # env-injection, ISSUE-209
       enabled: true
 
     # ── Secrets, credentials & permissions ──────────────────────────────────
@@ -87,21 +103,11 @@ github:
       enabled: true
     reusableWorkflowsMustNotInheritSecrets:
       enabled: true
-    workflowMustNotUnredactSecretsViaFromJSON:
-      enabled: true
-    workflowMustNotExportEntireSecretsContext:
-      enabled: true
-    workflowMustNotIndexSecretsDynamically:
+    workflowMustNotExportEntireSecretsContext:   # over-provisioned secrets, ISSUE-309
       enabled: true
     workflowsMustDeclarePermissions:
       enabled: true
     workflowMustNotGrantPermissionsWriteAll:
-      enabled: true
-    deployJobsMustUseEnvironmentGate:
-      enabled: true
-    githubAppTokensMustBeRevokedOnExit:
-      enabled: true
-    checkoutMustNotPersistCredentials:
       enabled: true
 
     # ── Triggers & composition ──────────────────────────────────────────────
@@ -126,14 +132,6 @@ github:
       required: github/codeql-action
 
     # ── Workflow hygiene ────────────────────────────────────────────────────
-    workflowsMustHaveExplicitName:
-      enabled: true
-    workflowsMustDeclareConcurrency:
-      enabled: true
-    workflowMustNotUseKnownMisfeatures:
-      enabled: true
-    workflowMustNotContainObfuscation:
-      enabled: true
     securityJobsMustNotBeWeakened:
       enabled: true
       securityJobPatterns:
@@ -158,7 +156,7 @@ github:
         enabled: true
 
     # ── Repository governance ───────────────────────────────────────────────
-    branchMustBeProtected:           # API — needs a token with repo / admin read
+    branchMustBeProtected:               # API — needs a token with repo / admin read
       enabled: true
       defaultMustBeProtected: true
       namePatterns:
@@ -167,13 +165,3 @@ github:
         - "release/*"
       allowForcePush: false
       codeOwnerApprovalRequired: true
-    repositoriesMustConfigureDependencyUpdates:
-      enabled: true
-    repositoriesMustRunSAST:
-      enabled: true
-    repositoriesMustPublishSecurityPolicy:
-      enabled: true
-    dependabotMustNotAllowInsecureExternalCodeExecution:
-      enabled: true
-    dependabotEcosystemsMustHaveCooldown:
-      enabled: true
