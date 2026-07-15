@@ -5,7 +5,7 @@
 # plumber-example-critical. Only the repository quality differs between them, so
 # the three Plumber scores (A / C / E) come purely from the workflows, never
 # from a weakened policy.
-##
+#
 # Every GitHub Actions control that Plumber v0.4.3 ships is ENABLED here and
 # tuned to the scope of these repos (a small TypeScript library published to
 # npm + a demo container image). This file validates cleanly against v0.4.3:
