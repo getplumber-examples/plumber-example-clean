@@ -12,9 +12,8 @@
 #
 #   plumber config validate
 #
-# A few controls are API-backed (they call the GitHub API through `gh`) and one
-# is opt-in (gitleaks). Without `gh auth login` / gitleaks on PATH they abstain
-# instead of producing false positives.
+# A few controls are API-backed (they call the GitHub API through `gh`).
+# Without `gh auth login` they abstain instead of producing false positives.
 # =============================================================================
 version: "2.0"
 
@@ -99,8 +98,6 @@ github:
       enabled: true
 
     # ── Secrets, credentials & permissions ──────────────────────────────────
-    pipelineMustNotLeakSecretsInConfig:   # opt-in, requires gitleaks on PATH
-      enabled: true
     reusableWorkflowsMustNotInheritSecrets:
       enabled: true
     workflowMustNotExportEntireSecretsContext:   # over-provisioned secrets, ISSUE-309
