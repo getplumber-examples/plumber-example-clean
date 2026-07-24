@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-      - uses: getplumber/plumber@3e7d6933189432f9a2ebcc2f6ba813bef7916179 # v0.4.3
+      - uses: getplumber/plumber@e3e7a4a54501ea5bed8d015e68ad80539502a22b # v0.4.13
         with:
           # This repo is built to stay at the top grade. Gate on the Plumber
           # Score letter and fail the build on any regression below an A;
