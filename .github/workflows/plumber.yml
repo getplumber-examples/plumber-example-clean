@@ -29,7 +29,6 @@ jobs:
           # This repo is built to stay at the top grade. Gate on the Plumber
           # Score letter and fail the build on any regression below an A;
           # findings still upload to code scanning.
-          platform: https://demo-github.getplumber.tech
           min-score: A
           # Publish the live A badge to score.getplumber.io (default branch only).
           score-push: true
